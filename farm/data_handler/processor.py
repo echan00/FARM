@@ -635,6 +635,8 @@ class NER2Processor(Processor):
             max_seq_len=self.max_seq_len,
             tokenizer=self.tokenizer,
         )
+        print("_dict_to_samples")
+        print(features)
         return features
 
 #####################
