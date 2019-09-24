@@ -1,4 +1,5 @@
 import os
+import pickle
 import abc
 from abc import ABC
 import random
@@ -572,6 +573,69 @@ class NERProcessor(Processor):
         )
         return features
 
+#########################################
+# Processors for NER + additional feature data ####
+#########################################
+class NER2Processor(Processor):
+
+    def __init__(
+        self,
+        tokenizer,
+        max_seq_len,
+        data_dir,
+        label_list=None,
+        metric=None,
+        train_filename="train.txt",
+        dev_filename="dev.txt",
+        test_filename="test.txt",
+        dev_split=0.0,
+        delimiter="\t",
+        **kwargs,
+    ):
+
+        # Custom processor attributes
+        self.delimiter = delimiter
+
+        super(NER2Processor, self).__init__(
+            tokenizer=tokenizer,
+            max_seq_len=max_seq_len,
+            train_filename=train_filename,
+            dev_filename=dev_filename,
+            test_filename=test_filename,
+            dev_split=dev_split,
+            data_dir=data_dir,
+            tasks={}
+        )
+
+        if metric and label_list:
+            self.add_task("ner", metric, label_list)
+
+    def _file_to_dicts(self, file: str) -> [dict]:
+        with open(str, 'rb') as fp:
+            dicts = pickle.load(fp)
+#         dicts = [{
+#            'text': '1951 bis 1953 wurde der nördliche Teil als Jugendburg des Kolpingwerkes gebaut .', 	
+#            'custom_data': ['2', 'O', 'O', 'O', 'O', '3', 'O', 'O', 'O', 'O', '1', 'O', '3'],
+#            'ner_label': ['2', 'O', '1', 'O', 'O', '3', 'O', 'O', 'O', 'O', '1', 'O', '3'],
+#         }]
+        return dicts
+
+    def _dict_to_samples(self, dict: dict, **kwargs) -> [Sample]:
+        # this tokenization also stores offsets, which helps to map our entity tags back to original positions
+        tokenized = tokenize_with_metadata(dict["text"], self.tokenizer, self.max_seq_len)
+        print("_dict_to_samples")
+        print(tokenized)
+        tokenized['custom_data'] = dict['custom_data']
+        return [Sample(id=None, clear_text=dict, tokenized=tokenized)]
+
+    def _sample_to_features(self, sample) -> dict:
+        features = samples_to_features_ner(
+            sample=sample,
+            tasks=self.tasks,
+            max_seq_len=self.max_seq_len,
+            tokenizer=self.tokenizer,
+        )
+        return features
 
 #####################
 # LM Processors ####
