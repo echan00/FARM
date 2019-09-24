@@ -208,6 +208,9 @@ class AdaptiveModel(nn.Module):
                 output = self.dropout(sequence_output)
             elif lm_out == "per_sequence" or lm_out == "per_sequence_continuous":
                 output = self.dropout(pooled_output)
+            elif lm_out == "per_token_additional_features":
+                concat = concat_additional(sequence_output,kwargs["custom_data"])
+                output = self.dropout(concat)                
             elif (
                 lm_out == "per_token_squad"
             ):  # we need a per_token_squad because of variable metric computation later on...
