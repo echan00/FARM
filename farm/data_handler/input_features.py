@@ -166,6 +166,8 @@ def samples_to_features_ner(
     # tokens, initial_mask = words_to_tokens(words, tokenizer, max_seq_len)
 
     tokens = sample.tokenized["tokens"]
+    custom_data = sample.tokenized["custom_data"]
+    
     initial_mask = [int(x) for x in sample.tokenized["start_of_word"]]
 
     # initial_mask =
@@ -199,19 +201,21 @@ def samples_to_features_ner(
                            "\nIf you are running in *training* mode: Verify you are supplying a proper label list to your processor and check that labels in input data are correct.")
 
         segment_ids = [0] * max_seq_len
-
+        
         # Pad
         input_ids = pad(input_ids, max_seq_len, 0)
         if label_ids:
             label_ids = pad(label_ids, max_seq_len, 0)
         initial_mask = pad(initial_mask, max_seq_len, 0)
         padding_mask = pad(padding_mask, max_seq_len, 0)
+        custom_data = pad(custom_data, max_seq_len, 0)
 
         feature_dict = {
             "input_ids": input_ids,
             "padding_mask": padding_mask,
             "segment_ids": segment_ids,
             "initial_mask": initial_mask,
+            "custom_data": custom_data,
         }
 
         if label_ids:
