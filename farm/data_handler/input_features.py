@@ -173,6 +173,7 @@ def samples_to_features_ner(
     # initial_mask =
     # Add CLS and SEP tokens
     tokens = add_cls_sep(tokens, cls_token, sep_token)
+    custom_data = [0] + custom_data + [0]
     initial_mask = [0] + initial_mask + [0]  # CLS and SEP don't count as initial tokens
     padding_mask = [1] * len(tokens)
 
