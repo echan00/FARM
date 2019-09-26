@@ -281,8 +281,8 @@ class AdaptiveModel(nn.Module):
         except Exception as e:
             logger.warning(f"ML logging didn't work: {e}")
 
-    def concat_additional(list1, list2):
-        list3 = []
-        for idx, x in enumerate(list1):
-            list3.append(list1[idx], list2[idx])
-        return list3
+def concat_additional(list1, list2):
+    list3 = []
+    for idx, x in enumerate(list1):
+        list3.append(list1[idx], list2[idx])
+    return list3
