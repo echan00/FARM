@@ -205,12 +205,18 @@ class AdaptiveModel(nn.Module):
         for head, lm_out in zip(self.prediction_heads, self.lm_output_types):
             # Choose relevant vectors from LM as output and perform dropout
             if lm_out == "per_token":
+                print("----")
+                print(sequence_output)
+                print('1Tensor shape:', sequence_output.shape)   # t.size() gives the same
+                print('1Number of dimensions:', sequence_output.dim())
+                print('1Tensor type:', sequence_output.type())   # there are other types
                 output = self.dropout(sequence_output)
             elif lm_out == "per_sequence" or lm_out == "per_sequence_continuous":
                 output = self.dropout(pooled_output)
             elif lm_out == "per_token_additional_features":
+                #print(kwargs)
                 concat = concat_additional(sequence_output, kwargs["custom_data"])
-                output = self.dropout(concat)                
+                output = self.dropout(concat)
             elif (
                 lm_out == "per_token_squad"
             ):  # we need a per_token_squad because of variable metric computation later on...
@@ -281,8 +287,20 @@ class AdaptiveModel(nn.Module):
         except Exception as e:
             logger.warning(f"ML logging didn't work: {e}")
 
+
+import torch
 def concat_additional(list1, list2):
-    list3 = []
-    for idx, x in enumerate(list1):
-        list3.append((list1[idx], list2[idx]))
-    return list3
+   # print("----")
+   # print(list1)
+   # print('1Tensor shape:', list1.shape)   # t.size() gives the same
+   # print('1Number of dimensions:', list1.dim())
+   # print('1Tensor type:', list1.type())   # there are other types
+   # print("++++")
+    list2.unsqueeze_(-1)
+    #list2 = list2.expand(3,512,768)
+   # print('2Tensor shape:', list2.shape)   # t.size() gives the same
+   # print('2Number of dimensions:', list2.dim())
+   # print('2Tensor type:', list2.type())   # there are other types
+    target = torch.cat((list1.float(), list2.float()),dim=2)
+    return target
+
