@@ -27,9 +27,9 @@ logging.basicConfig(
 ##########################
 set_all_seeds(seed=42)
 device, n_gpu = initialize_device_settings(use_cuda=True)
-n_epochs = 1
+n_epochs = 3
 batch_size = 32
-evaluate_every = 100
+evaluate_every = 500
 lang_model = "bert-base-multilingual-cased"
 
 # 1.Create a tokenizer
@@ -38,10 +38,10 @@ tokenizer = BertTokenizer.from_pretrained(
 )
 
 # 2. Create a DataProcessor that handles all the conversion from raw text into a pytorch Dataset
-ner_labels = ['[PAD]', 'X', 0, 1]
+ner_labels = ['[PAD]','X','0','1']
 
 processor = NER2Processor(
-    tokenizer=tokenizer, max_seq_len=512, data_dir="./", metric="seq_f1", label_list=ner_labels
+    tokenizer=tokenizer, max_seq_len=448, data_dir="./", metric="seq_f1", label_list=ner_labels
 )
 
 # 3. Create a DataSilo that loads several datasets (train/dev/test), provides DataLoaders for them and calculates a few descriptive statistics of our datasets
@@ -52,7 +52,7 @@ data_silo = DataSilo(processor=processor, batch_size=batch_size)
 language_model = Bert.load(lang_model)
 # b) and a prediction head on top that is suited for our task => NER
 
-custom_feature_dim = 192
+custom_feature_dim = 1
 prediction_head = TokenClassificationHead(task_name="ner",
                                           layer_dims=[768+custom_feature_dim, len(processor.tasks["ner"]["label_list"])])
 
