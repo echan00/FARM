@@ -550,3 +550,19 @@ def _SQUAD_check_is_max_context(doc_spans, cur_span_index, position):
             best_span_index = span_index
 
     return cur_span_index == best_span_index
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
