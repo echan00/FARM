@@ -657,9 +657,9 @@ class NER2Processor(Processor):
                         print("-2--")
                         print(word_two_tokenized)
                         print(tokenized['tokens'])
-        
+
         tokenized['custom_data'] = x1
-        #tokenized['ner_label'] = y
+        tokenized['ner_label'] = y
         dict['custom_data'] = x1
         dict['ner_label'] = y
         return [Sample(id=None, clear_text=dict, tokenized=tokenized)]
@@ -671,8 +671,8 @@ class NER2Processor(Processor):
             max_seq_len=self.max_seq_len,
             tokenizer=self.tokenizer,
         )
-        #print("_sample_to_features")
-        #print(features)
+        print("_sample_to_features")
+        print(features)
         return features
 
 def find_overlap(word_one_tokenized, tokenized):
@@ -981,3 +981,14 @@ class RegressionProcessor(Processor):
             tokenizer=self.tokenizer
         )
         return features
+
+
+
+
+
+
+
+
+
+
+
