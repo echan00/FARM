@@ -172,9 +172,9 @@ def samples_to_features_ner(
 
     # initial_mask =
     # Add CLS and SEP tokens
-    tokens = add_cls_sep(tokens, cls_token, sep_token)
-    custom_data = [0] + custom_data + [0]
-    initial_mask = [0] + initial_mask + [0]  # CLS and SEP don't count as initial tokens
+    #tokens = add_cls_sep(tokens, cls_token, sep_token)
+    #custom_data = [0] + custom_data + [0]
+    #initial_mask = [0] + initial_mask + [0]  # CLS and SEP don't count as initial tokens
     padding_mask = [1] * len(tokens)
 
     # Convert to input and labels to ids, generate masks
@@ -188,7 +188,8 @@ def samples_to_features_ner(
             labels_word = sample.clear_text[label_name]
             labels_token = expand_labels(labels_word, initial_mask, non_initial_token)
             # labels_token = add_cls_sep(labels_token, cls_token, sep_token)
-            label_ids = [label_list.index(lt) for lt in labels_token]
+            #label_ids = [label_list.index(lt) for lt in labels_token]
+            label_ids = [label_list.index(lt) for lt in sample.tokenized['ner_label']]
         except ValueError:
             label_ids = None
             problematic_labels = set(labels_token).difference(set(label_list))
