@@ -1,6 +1,7 @@
 import os
 import pickle
 import abc
+import re
 from abc import ABC
 import random
 import logging
@@ -613,30 +614,50 @@ class NER2Processor(Processor):
     def _file_to_dicts(self, file: str) -> [dict]:
         with open(file, 'rb') as fp:
             dicts = pickle.load(fp)
+#         dicts = [{
+#            'text': '1951 bis 1953 wurde der nördliche Teil als Jugendburg des Kolpingwerkes gebaut .',        
+#            'custom_data': ['2', 'O', 'O', 'O', 'O', '3', 'O', 'O', 'O', 'O', '1', 'O', '3'],
+#            'ner_label': ['2', 'O', '1', 'O', 'O', '3', 'O', 'O', 'O', 'O', '1', 'O', '3'],
+#         }]
         return dicts
 
     def _dict_to_samples(self, dict: dict, **kwargs) -> [Sample]:
         # this tokenization also stores offsets, which helps to map our entity tags back to original positions
         words = re.findall(r"<t>(.*?)</t>", dict["text"], flags=0)
         word_one = words[0]
-        word_two = words[1]
+        if len(words) > 1:
+                word_two = words[1]
+                word_two_tokenized = tokenize_with_metadata(word_two, self.tokenizer, self.max_seq_len)['tokens']
         dict["text"] = re.sub(r'<t>','', dict["text"])
         dict["text"] = re.sub(r'</t>','', dict["text"])
         tokenized = tokenize_with_metadata(dict["text"], self.tokenizer, self.max_seq_len)
         word_one_tokenized = tokenize_with_metadata(word_one, self.tokenizer, self.max_seq_len)['tokens']
-        word_two_tokenized = tokenize_with_metadata(word_two, self.tokenizer, self.max_seq_len)['tokens']
 
         x1, y = [], []
         for token in tokenized['tokens']:
-               x1.append(0)
-               y.append(0)
-        idx = find_overlap(word_one_tokenized, tokenized['tokens'])
-        for x in range(0,len(word_one_tokenized)):
-               x1[idx+x] = 1
-               y[idx+x] = 1
-        idx = find_overlap(word_two_tokenized, tokenized['tokens'])
-        for x in range(0,len(word_two_tokenized)):
-              y[idx+x] = 1
+                x1.append(0)
+                y.append('0')
+                
+        idx = find_overlap(word_one_tokenized, tokenized['tokens'])        
+        if idx > -1:
+                for x in range(0,len(word_one_tokenized)):
+                        x1[idx+x] = 1
+                        y[idx+x] = '1'
+        else:
+            print("-1--")
+            print(word_one_tokenized)
+            print(tokenized['tokens'])
+                    
+        if len(words) > 1:
+                idx = find_overlap(word_two_tokenized, tokenized['tokens'])
+                if idx > -1:
+                        for x in range(0,len(word_two_tokenized)):
+                                y[idx+x] = '1'
+                else:
+                        print("-2--")
+                        print(word_two_tokenized)
+                        print(tokenized['tokens'])
+        
         tokenized['custom_data'] = x1
         #tokenized['ner_label'] = y
         dict['custom_data'] = x1
@@ -650,26 +671,30 @@ class NER2Processor(Processor):
             max_seq_len=self.max_seq_len,
             tokenizer=self.tokenizer,
         )
-        print("_sample_to_features")
-        print(features)
+        #print("_sample_to_features")
+        #print(features)
         return features
 
-
 def find_overlap(word_one_tokenized, tokenized):
+        temp = -1
         accum = ''
         done = False
         for idx, x in enumerate(tokenized):
                 if tokenized[idx] == word_one_tokenized[0]:
                         for y in range(0,len(word_one_tokenized)):
                                 if len(word_one_tokenized) > y:
-                                        if word_one_tokenized[y] == tokenized[idx+y]:
-                                                index = idx
-                                                done = True
-                                        else:
-                                                done = False
+                                        try:
+                                                if word_one_tokenized[y] == tokenized[idx+y]:
+                                                        temp = idx
+                                                        done = True
+                                                else:
+                                                        done = False
+                                        except:
+                                                temp = -1
+                                                pass
                 if done == True:
                         break
-        return index
+        return temp
 
 #####################
 # LM Processors ####
