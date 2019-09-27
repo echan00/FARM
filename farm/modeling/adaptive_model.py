@@ -303,4 +303,3 @@ def concat_additional(list1, list2):
    # print('2Tensor type:', list2.type())   # there are other types
     target = torch.cat((list1.float(), list2.float()),dim=2)
     return target
-
