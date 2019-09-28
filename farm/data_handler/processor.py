@@ -671,8 +671,8 @@ class NER2Processor(Processor):
             max_seq_len=self.max_seq_len,
             tokenizer=self.tokenizer,
         )
-        print("_sample_to_features")
-        print(features)
+        #print("_sample_to_features")
+        #print(features)
         return features
 
 def find_overlap(word_one_tokenized, tokenized):
