@@ -202,8 +202,17 @@ def samples_to_features_ner(
                            "\nIf your are running in *inference* mode: Don't worry!"
                            "\nIf you are running in *training* mode: Verify you are supplying a proper label list to your processor and check that labels in input data are correct.")
 
-        segment_ids = [0] * max_seq_len
-        
+        segment_ids = []
+        next_sent = False
+        for x in input_ids: 
+            if x == 102:
+                 segment_ids.append(0)    
+                 next_sent = True
+            elif next_sent == True:
+                 segment_ids.append(1)
+            else:
+                 segment_ids.append(0)
+
         # Pad
         input_ids = pad(input_ids, max_seq_len, 0)
         if label_ids:
@@ -211,6 +220,7 @@ def samples_to_features_ner(
         initial_mask = pad(initial_mask, max_seq_len, 0)
         padding_mask = pad(padding_mask, max_seq_len, 0)
         custom_data = pad(custom_data, max_seq_len, 0)
+        segment_ids = pad(segment_ids, max_seq_len, 0)        
 
         feature_dict = {
             "input_ids": input_ids,
