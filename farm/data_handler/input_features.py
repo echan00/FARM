@@ -172,9 +172,9 @@ def samples_to_features_ner(
 
     # initial_mask =
     # Add CLS and SEP tokens
-    #tokens = add_cls_sep(tokens, cls_token, sep_token)
-    #custom_data = [0] + custom_data + [0]
-    #initial_mask = [0] + initial_mask + [0]  # CLS and SEP don't count as initial tokens
+    tokens = add_cls_sep(tokens, cls_token, sep_token)
+    custom_data = [0] + custom_data + [0]
+    initial_mask = [0] + initial_mask + [0]  # CLS and SEP don't count as initial tokens
     padding_mask = [1] * len(tokens)
 
     # Convert to input and labels to ids, generate masks
@@ -200,18 +200,21 @@ def samples_to_features_ner(
             label_ids = None
             logger.warning(f"[Task: {task_name}] Could not convert labels to ids via label_list!"
                            "\nIf your are running in *inference* mode: Don't worry!"
-                           "\nIf you are running in *training* mode: Verify you are supplying a proper label list to your processor and check that labels in input data are correct.")
+                           "\nIf you are running in *training* mode: Verify you are supplying a proper label list to your processor and check that labels in input data are corre$
+
+        label_ids = [0] + label_ids + [0]
 
         segment_ids = []
         next_sent = False
-        for x in input_ids: 
+        for x in input_ids:
             if x == 102:
-                 segment_ids.append(0)    
+                 segment_ids.append(0)
                  next_sent = True
             elif next_sent == True:
                  segment_ids.append(1)
             else:
                  segment_ids.append(0)
+        segment_ids[len(segment_ids)-1] = 1
 
         # Pad
         input_ids = pad(input_ids, max_seq_len, 0)
@@ -220,7 +223,7 @@ def samples_to_features_ner(
         initial_mask = pad(initial_mask, max_seq_len, 0)
         padding_mask = pad(padding_mask, max_seq_len, 0)
         custom_data = pad(custom_data, max_seq_len, 0)
-        segment_ids = pad(segment_ids, max_seq_len, 0)        
+        segment_ids = pad(segment_ids, max_seq_len, 0)
 
         feature_dict = {
             "input_ids": input_ids,
