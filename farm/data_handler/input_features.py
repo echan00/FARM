@@ -141,7 +141,6 @@ def samples_to_features_ner(
 ):
     """
     Generates a dictionary of features for a given input sample that is to be consumed by an NER model.
-
     :param sample: Sample object that contains human readable text and label fields from a single NER data sample
     :type sample: Sample
     :param tasks: A dictionary where the keys are the names of the tasks and the values are the details of the task (e.g. label_list, metric, tensor name)
@@ -160,26 +159,21 @@ def samples_to_features_ner(
              (also "label_ids" if not in inference mode). The values are lists containing those features.
     :rtype: dict
     """
-
     # Tokenize words and extend the labels so they are aligned with the tokens
     # words = sample.clear_text["text"].split(" ")
     # tokens, initial_mask = words_to_tokens(words, tokenizer, max_seq_len)
-
     tokens = sample.tokenized["tokens"]
     custom_data = sample.tokenized["custom_data"]
     
     initial_mask = [int(x) for x in sample.tokenized["start_of_word"]]
-
     # initial_mask =
     # Add CLS and SEP tokens
     tokens = add_cls_sep(tokens, cls_token, sep_token)
-    custom_data = [0] + custom_data + [0]
+    custom_data = [5] + custom_data + [4]
     initial_mask = [0] + initial_mask + [0]  # CLS and SEP don't count as initial tokens
     padding_mask = [1] * len(tokens)
-
     # Convert to input and labels to ids, generate masks
     input_ids = tokenizer.convert_tokens_to_ids(tokens)
-
     for task_name, task in tasks.items():
         try:
             label_list = task["label_list"]
@@ -201,9 +195,7 @@ def samples_to_features_ner(
             logger.warning(f"[Task: {task_name}] Could not convert labels to ids via label_list!"
                            "\nIf your are running in *inference* mode: Don't worry!"
                            "\nIf you are running in *training* mode: Verify you are supplying a proper label list to your processor and check that labels in input data are corre")
-
-        label_ids = [0] + label_ids + [0]
-
+        label_ids = [5] + label_ids + [4]
         segment_ids = []
         next_sent = False
         for x in input_ids:
@@ -215,7 +207,6 @@ def samples_to_features_ner(
             else:
                  segment_ids.append(0)
         segment_ids[len(segment_ids)-1] = 1
-
         # Pad
         input_ids = pad(input_ids, max_seq_len, 0)
         if label_ids:
@@ -224,7 +215,6 @@ def samples_to_features_ner(
         padding_mask = pad(padding_mask, max_seq_len, 0)
         custom_data = pad(custom_data, max_seq_len, 0)
         segment_ids = pad(segment_ids, max_seq_len, 0)
-
         feature_dict = {
             "input_ids": input_ids,
             "padding_mask": padding_mask,
@@ -232,10 +222,8 @@ def samples_to_features_ner(
             "initial_mask": initial_mask,
             "custom_data": custom_data,
         }
-
         if label_ids:
             feature_dict[label_tensor_name] = label_ids
-
     return [feature_dict]
 
 
