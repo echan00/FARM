@@ -688,6 +688,7 @@ def find_overlap(word_one_tokenized, tokenized):
                                                         temp = idx
                                                         done = True
                                                 else:
+                                                        temp = -1
                                                         done = False
                                         except:
                                                 temp = -1
