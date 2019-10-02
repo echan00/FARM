@@ -620,7 +620,6 @@ class NER2Processor(Processor):
 #            'ner_label': ['2', 'O', '1', 'O', 'O', '3', 'O', 'O', 'O', 'O', '1', 'O', '3'],
 #         }]
         return dicts
-
     def _dict_to_samples(self, dict: dict, **kwargs) -> [Sample]:
         # this tokenization also stores offsets, which helps to map our entity tags back to original positions
         words = re.findall(r"<t>(.*?)</t>", dict["text"], flags=0)
@@ -648,47 +647,63 @@ class NER2Processor(Processor):
         dict["text"] = re.sub(r'</t>','', dict["text"])
         tokenized = tokenize_with_metadata(dict["text"], self.tokenizer, self.max_seq_len)
         word_one_tokenized = tokenize_with_metadata(word_one, self.tokenizer, self.max_seq_len)['tokens']
-
         x1, y = [], []
         for token in tokenized['tokens']:
-                x1.append(0)
-                y.append('0')
-
-
+                if token == '[CLS]':
+                        x1.append(5)
+                        y.append('[CLS]')
+                elif token == '[SEP]':
+                        x1.append(4)
+                        y.append('[SEP]')
+                else:
+                        x1.append(0)
+                        y.append('N')
         idx = find_overlap(word_one_tokenized, tokenized['tokens'], term_one_idx)
         if idx > -1:
                 for x in range(0,len(word_one_tokenized)):
                         x1[idx+x] = 1
-                        y[idx+x] = '1'
+                        y[idx+x] = 'Y'
         else:
             print("-1--")
             print(word_one_tokenized)
             print(tokenized['tokens'])
             x1, y = [], []
             for token in tokenized['tokens']:
-                    x1.append(0)
-                    y.append('0')
-
+                if token == '[CLS]':
+                        x1.append(5)
+                        y.append('[CLS]')
+                elif token == '[SEP]':
+                        x1.append(4)
+                        y.append('[SEP]')
+                else:
+                        x1.append(0)
+                        y.append('N')
         if len(words) > 1:
                 idx = find_overlap(word_two_tokenized, tokenized['tokens'], term_two_idx)
                 if idx > -1:
                         for x in range(0,len(word_two_tokenized)):
-                                y[idx+x] = '1'
+                                y[idx+x] = 'Y'
+                                x1[idx+x] = 1
                 else:
                         print("-2--")
                         print(word_two_tokenized)
                         print(tokenized['tokens'])
                         x1, y = [], []
                         for token in tokenized['tokens']:
-                                x1.append(0)
-                                y.append('0')                        
-
+                                if token == '[CLS]':
+                                        x1.append(5)
+                                        y.append('[CLS]')
+                                elif token == '[SEP]':
+                                        x1.append(4)
+                                        y.append('[SEP]')
+                                else:
+                                        x1.append(0)
+                                        y.append('N')
         tokenized['custom_data'] = x1
         tokenized['ner_label'] = y
         dict['custom_data'] = x1
         dict['ner_label'] = y
         return [Sample(id=None, clear_text=dict, tokenized=tokenized)]
-
     def _sample_to_features(self, sample) -> dict:
         features = samples_to_features_ner(
             sample=sample,
