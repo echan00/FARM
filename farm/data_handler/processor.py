@@ -625,9 +625,23 @@ class NER2Processor(Processor):
         # this tokenization also stores offsets, which helps to map our entity tags back to original positions
         words = re.findall(r"<t>(.*?)</t>", dict["text"], flags=0)
         word_one = words[0]
+        term_one_idxs = [m.start() for m in re.finditer(re.escape(word_one), dict["text"])]
+        for idx, k in enumerate(term_one_idxs):
+            try:
+                if dict["text"][idx-3:idx] == '<t>':
+                    term_one_idx = idx
+            except:
+                pass
         if len(words) > 1:
                 word_two = words[1]
                 word_two_tokenized = tokenize_with_metadata(word_two, self.tokenizer, self.max_seq_len)['tokens']
+                term_two_idxs = [m.start() for m in re.finditer(re.escape(word_two), dict["text"])]
+                for idx, k in enumerate(term_two_idxs):
+                    try:
+                        if dict["text"][idx-3:idx] == '<t>':
+                            term_two_idx = idx
+                    except:
+                        pass
         dict["text"] = re.sub(r'<t>','', dict["text"])
         dict["text"] = re.sub(r'</t>','', dict["text"])
         tokenized = tokenize_with_metadata(dict["text"], self.tokenizer, self.max_seq_len)
@@ -638,7 +652,7 @@ class NER2Processor(Processor):
                 x1.append(0)
                 y.append('0')
                 
-        idx = find_overlap(word_one_tokenized, tokenized['tokens'])        
+        idx = find_overlap(word_one_tokenized, tokenized['tokens'], term_one_idx)
         if idx > -1:
                 for x in range(0,len(word_one_tokenized)):
                         x1[idx+x] = 1
@@ -649,7 +663,7 @@ class NER2Processor(Processor):
             print(tokenized['tokens'])
                     
         if len(words) > 1:
-                idx = find_overlap(word_two_tokenized, tokenized['tokens'])
+                idx = find_overlap(word_two_tokenized, tokenized['tokens'], term_two_idx)
                 if idx > -1:
                         for x in range(0,len(word_two_tokenized)):
                                 y[idx+x] = '1'
@@ -675,27 +689,25 @@ class NER2Processor(Processor):
         #print(features)
         return features
 
-def find_overlap(word_one_tokenized, tokenized):
-        temp = -1
-        accum = ''
-        done = False
-        for idx, x in enumerate(tokenized):
-                if tokenized[idx] == word_one_tokenized[0]:
-                        for y in range(0,len(word_one_tokenized)):
-                                if len(word_one_tokenized) > y:
-                                        try:
-                                                if word_one_tokenized[y] == tokenized[idx+y]:
-                                                        temp = idx
-                                                        done = True
-                                                else:
-                                                        temp = -1
-                                                        done = False
-                                        except:
-                                                temp = -1
-                                                pass
-                if done == True:
-                        break
-        return temp
+def find_overlap(word_one_tokenized, tokenized, index_cnt):
+    temp = -1
+    accum = ''
+    cnt = 0
+    for idx, x in enumerate(tokenized):
+        if tokenized[idx] == word_one_tokenized[0]:
+            for y in range(0,len(word_one_tokenized)):
+                if len(word_one_tokenized) > y:
+                    try:
+                        if word_one_tokenized[y] == tokenized[idx+y]:
+                            if index_cnt == cnt:
+                                temp = idx
+                                cnt += 1
+                            else:
+                                temp = -1
+                    except:
+                        temp = -1
+                        pass
+    return temp
 
 #####################
 # LM Processors ####
