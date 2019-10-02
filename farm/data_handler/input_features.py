@@ -200,7 +200,7 @@ def samples_to_features_ner(
             label_ids = None
             logger.warning(f"[Task: {task_name}] Could not convert labels to ids via label_list!"
                            "\nIf your are running in *inference* mode: Don't worry!"
-                           "\nIf you are running in *training* mode: Verify you are supplying a proper label list to your processor and check that labels in input data are corre$
+                           "\nIf you are running in *training* mode: Verify you are supplying a proper label list to your processor and check that labels in input data are corre")
 
         label_ids = [0] + label_ids + [0]
 
