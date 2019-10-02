@@ -696,25 +696,25 @@ def find_overlap(word_one_tokenized, tokenized, index_cnt):
     final_temp = -1
     accum = ''
     cnt = 0
-          for idx, x in enumerate(tokenized):
-                if tokenized[idx] == word_one_tokenized[0]:
-                      for y in range(0,len(word_one_tokenized)):
-                            if len(word_one_tokenized) > y:
-                                  try:
-                                        if tokenized[idx+y] == word_one_tokenized[y]:
-                                            temp = idx
-                                        else:
-                                            temp = -1
-                                  except:
-                                        temp = -1
-                                        pass
-                if temp > -1:
-                      if index_cnt == cnt:
-                            final_temp = temp
-                            cnt += 1
-                      else:
-                            cnt += 1
-                temp = -1
+    for idx, x in enumerate(tokenized):
+        if tokenized[idx] == word_one_tokenized[0]:
+              for y in range(0,len(word_one_tokenized)):
+                    if len(word_one_tokenized) > y:
+                          try:
+                                if tokenized[idx+y] == word_one_tokenized[y]:
+                                    temp = idx
+                                else:
+                                    temp = -1
+                          except:
+                                temp = -1
+                                pass
+        if temp > -1:
+              if index_cnt == cnt:
+                    final_temp = temp
+                    cnt += 1
+              else:
+                    cnt += 1
+        temp = -1
     return final_temp
 
 #####################
