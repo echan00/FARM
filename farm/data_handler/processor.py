@@ -653,26 +653,27 @@ class NER2Processor(Processor):
         for token in tokenized['tokens']:
                 x1.append(0)
                 y.append('0')
-                
-        idx = find_overlap(word_one_tokenized, tokenized['tokens'], term_one_idx)
-        if idx > -1:
-                for x in range(0,len(word_one_tokenized)):
-                        x1[idx+x] = 1
-                        y[idx+x] = '1'
-        else:
-            print("-1--")
-            print(word_one_tokenized)
-            print(tokenized['tokens'])
-                    
-        if len(words) > 1:
-                idx = find_overlap(word_two_tokenized, tokenized['tokens'], term_two_idx)
-                if idx > -1:
-                        for x in range(0,len(word_two_tokenized)):
-                                y[idx+x] = '1'
-                else:
-                        print("-2--")
-                        print(word_two_tokenized)
-                        print(tokenized['tokens'])
+
+        if len(words) > 1:                
+            idx = find_overlap(word_one_tokenized, tokenized['tokens'], term_one_idx)
+            if idx > -1:
+                    for x in range(0,len(word_one_tokenized)):
+                            x1[idx+x] = 1
+                            y[idx+x] = '1'
+            else:
+                print("-1--")
+                print(word_one_tokenized)
+                print(tokenized['tokens'])
+
+            if len(words) > 1:
+                    idx = find_overlap(word_two_tokenized, tokenized['tokens'], term_two_idx)
+                    if idx > -1:
+                            for x in range(0,len(word_two_tokenized)):
+                                    y[idx+x] = '1'
+                    else:
+                            print("-2--")
+                            print(word_two_tokenized)
+                            print(tokenized['tokens'])
 
         tokenized['custom_data'] = x1
         tokenized['ner_label'] = y
