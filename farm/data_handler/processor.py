@@ -630,7 +630,7 @@ class NER2Processor(Processor):
         term_one_idxs = [m.start() for m in re.finditer(re.escape(word_one), dict["text"])]
         for idx, k in enumerate(term_one_idxs):
             try:
-                if dict["text"][idx-3:idx] == '<t>':
+                if dict["text"][k-3:k] == '<t>':
                     term_one_idx = idx
             except:
                 pass
@@ -640,7 +640,7 @@ class NER2Processor(Processor):
                 term_two_idxs = [m.start() for m in re.finditer(re.escape(word_two), dict["text"])]
                 for idx, k in enumerate(term_two_idxs):
                     try:
-                        if dict["text"][idx-3:idx] == '<t>':
+                        if dict["text"][k-3:k] == '<t>':
                             term_two_idx = idx
                     except:
                         pass
@@ -693,24 +693,29 @@ class NER2Processor(Processor):
 
 def find_overlap(word_one_tokenized, tokenized, index_cnt):
     temp = -1
+    final_temp = -1
     accum = ''
     cnt = 0
-    done = False
-    for idx, x in enumerate(tokenized):
-        if tokenized[idx] == word_one_tokenized[0]:
-            for y in range(0,len(word_one_tokenized)):
-                if len(word_one_tokenized) > y:
-                    try:
-                        if word_one_tokenized[y] == tokenized[idx+y]:
-                            if index_cnt == cnt:
-                                temp = idx
+          for idx, x in enumerate(tokenized):
+                if tokenized[idx] == word_one_tokenized[0]:
+                      for y in range(0,len(word_one_tokenized)):
+                            if len(word_one_tokenized) > y:
+                                  try:
+                                        if tokenized[idx+y] == word_one_tokenized[y]:
+                                            temp = idx
+                                        else:
+                                            temp = -1
+                                  except:
+                                        temp = -1
+                                        pass
+                if temp > -1:
+                      if index_cnt == cnt:
+                            final_temp = temp
                             cnt += 1
-                        else:
-                            temp = -1
-                    except:
-                        temp = -1
-                        pass
-    return temp
+                      else:
+                            cnt += 1
+                temp = -1
+    return final_temp
 
 #####################
 # LM Processors ####
