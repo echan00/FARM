@@ -625,6 +625,8 @@ class NER2Processor(Processor):
         # this tokenization also stores offsets, which helps to map our entity tags back to original positions
         words = re.findall(r"<t>(.*?)</t>", dict["text"], flags=0)
         word_one = words[0]
+        term_one_idx = -1
+        term_two_idx = -1        
         term_one_idxs = [m.start() for m in re.finditer(re.escape(word_one), dict["text"])]
         for idx, k in enumerate(term_one_idxs):
             try:
@@ -693,6 +695,7 @@ def find_overlap(word_one_tokenized, tokenized, index_cnt):
     temp = -1
     accum = ''
     cnt = 0
+    done = False
     for idx, x in enumerate(tokenized):
         if tokenized[idx] == word_one_tokenized[0]:
             for y in range(0,len(word_one_tokenized)):
@@ -701,9 +704,9 @@ def find_overlap(word_one_tokenized, tokenized, index_cnt):
                         if word_one_tokenized[y] == tokenized[idx+y]:
                             if index_cnt == cnt:
                                 temp = idx
-                                cnt += 1
-                            else:
-                                temp = -1
+                            cnt += 1
+                        else:
+                            temp = -1
                     except:
                         temp = -1
                         pass
